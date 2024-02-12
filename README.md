@@ -4,6 +4,4 @@ PostMan link = "http://localhost:3002/collection/products"
 
 github Repository link = https://github.com/Sahl97/CW2.git
 
-Github pages link = 
-
-AWS link =
+AWS link = http://cw2-env.eba-2vecj35y.eu-west-2.elasticbeanstalk.com/
