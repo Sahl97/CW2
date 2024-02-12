@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Vue.js Pet Depot</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+        <script src="product.js"></script>
+        <link rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">    <!--CDN link for font awesome-->
+
+    <body>
+        <div id="app">
+            <header>
+            <h1>{{ sitename }} </h1>
+            <button v-on:click="showCheckout">    
+                {{ cartItemCount }}
+                <span class="fas fa-cart-plus"></span> Checkout <!--script for icon-->
+            </button>
+        </header>
+
+            <main>
+                <!--Product Page-->
+                <div v-if="showProduct">
+                    <div v-for="product in sortedProducts">
+
+                    
+                    <figure>
+                        <img v-bind:src="product.image" width="250" height="250">
+                    </figure>
+                    <h2 v-text="product.title"></h2>
+                    <p v-html="product.description"></p>
+                    <p>Price: {{product.price}}</p>
+                    <p>Available stock: {{ product.availableInventory - cartCount(product.id) }}</p>
+                    <button
+                        v-on:click="addToCart(product)"
+                        v-if="canAddToCart(product)">
+                            Add to cart
+                    </button>
+                    <button 
+                        disabled="disabled" v-else>
+                            N/A
+                    </button>
+                    <span v-if="product.availableInventory === cartCount(product.id)">
+                        All Out!
+                    </span>
+                    <span v-else-if="product.availableInventory - cartCount(product.id) < 5">
+                        only {{product.availableInventory - cartCount(product.id)}} Left!!
+                    </span>
+                    <span v-else>
+                        BUY NOW!!
+                    </span>
+                    <div>
+                        <span v-for="n in product.rating">★</span>
+                        <span v-for="n in 5-product.rating">☆</span>
+                    </div>
+                </div>
+            </div>
+
+                <!--Checkout Page-->
+                <div v-else>
+                    <h2>Checkout</h2>
+                    <p>
+                        <strong>First Name:</strong>
+                        <!--Input Field will bound to 'firstName' in the 'order' object-->
+                        <input v-model.trim="order.firstName"/>
+                    </p>
+                    <p>
+                        <strong>Last Name:</strong>
+                        <!--Input Field will bound to 'firstName' in the 'order' object-->
+                        <input v-model.trim="order.lastName"/>
+                    </p>
+                    <p>
+                        <strong>Address:</strong>
+                        <!--Input Field will bound to 'address' in the 'order' object-->
+                        <input v-model="order.address"/>
+                    </p>
+                    <p>
+                        <strong>City:</strong>
+                        <!--Input Field will bound to 'city' in the 'order' object-->
+                        <input v-model="order.city"/>
+                    </p>
+                    <p>
+                        <strong>Province:</strong>
+                        <!--Input Field will bound to 'firstName' in the 'order' object-->
+                        <select v-model="order.province">
+                            <option disabled value="">Province</option>
+                            <option v-for="(province, key) in provinces"
+                                v-bind:value="province"> 
+                                {{key}}
+                            </option>
+
+                            <!-- <option v-bind:value="province.AB">AB</option>
+                            <option v-bind:value="province.SK">SK</option>
+                            <option v-bind:value="province.BC">BC</option>
+                            <option v-bind:value="province.ON">ON</option> -->
+                        </select>
+                    </p>
+                    <p>
+                        <strong>Zip/Postal Code:</strong>
+                        <input v-model.number="order.zip" type="number"/>
+
+                    </p>
+
+                    <p><input type="checkbox" id="gift" value="true" v-model="order.gift" 
+                        v-bind:true-value="order.sendGift"
+                        v-bind:false-value="order.dontSendGift">
+                        <label for="gift"> Ship As Gift?</label>
+                        
+                    </p>
+                    <p>
+                        <input type="radio" id="home" value="Home" v-model="order.method">
+                        <label for="home"> Home </label>
+                        <input type="radio" id="business" value="Business" v-model="order.method">
+                        <label for="business"> Business </label>
+                    </p>
+
+                    <h2>Order Information</h2>
+                    <p>First Name: {{order.firstName}}</p>
+                    <p>Last Name: {{order.lastName}}</p>
+                    <p>Address: {{order.address}}</p>
+                    <p>City: {{order.city}}</p>
+                    <p>Province: {{order.province}}</p>
+                    <p>Zip/Postal Code: {{order.zip}}</p>
+                    <p>Gift? {{order.gift}}</p>
+                    <p>Method: {{order.method}}</p>
+                    <button v-on:click="submitForm"> Place Order </button>
+                </div>
+            </main>
+        </div>
+
+        <script type="text/javascript">
+            let webstore = new Vue({
+                el:'#app',
+
+                data:{
+                    sitename: 'Vue.js Pet Depot',
+                    showProduct: true,
+                    order: {
+                        firstName: '',
+                        lastName: '',
+                        address:'',
+                        city:'',
+                        province:'',
+                        zip:'',
+                        method: 'Home',
+                        gift: false,
+                        sendGift:"Send as a Gift",
+                        dontSendGift:"Don't send as a gift",
+                        
+                    },
+
+                    provinces: {
+                            AB: 'Alberta',
+                            SK: 'Saskachewan',
+                            BC: 'British Columbia',
+                            ON: 'Ontario'
+                        },
+
+                    // product:{ //product information of the cat food.
+                    //     id: 1001,
+                    //     title:"Cat Food, 25lb bag",
+                    //     description:"A 25 Pound bag of <em> irresisitible </em>,"+" organic goodness for your cat.",
+                    //     price: 2000,
+                    //     image:"catfood.jpg",
+                    //     stock: 10,
+                    //     availableInventory: 10, 
+                    //     showProduct: true,
+                    //     rating: 1
+                    // },
+                    products: [],
+                    cart:[], //array to store items in shopping cart.
+                },
+                mounted() {
+    this.fetchLessons();
+  },
+                methods: {
+                    addToCart:function (product) {
+                        return product.availableInventory > this.cartCount(product.id);
+                        this.cart.push(this.product.id);    //console.log(this.cart)
+                        // this.product.stock--;
+                    },
+
+                    fetchLessons() {
+      // Fetch lessons from the server
+      fetch(
+        "http://localhost:3002/collection/products",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((response) => response.json())
+        .then((responseJSON) => {
+          // Update the lessons data with the fetched lessons
+          this.lessons = responseJSON;
+        })
+        .catch((error) => {
+          console.error("Error fetching lessons:", error);
+        });
+    },
+                    showCheckout(){
+                        this.showProduct = this.showProduct ? false : true;
+                    },
+
+                    submitForm(){
+                        {alert('Order Submitted! :D')}
+                    },
+                    
+                    cartCount(id) {
+                        let count = 0;
+                        for (let i = 0; i < this.cart.length; i++){
+                            if (this.cart[i]=== id) {
+                                count++;
+                            }
+                        }
+                        return count;
+                    },
+                    canAddToCart: function(product) {
+                        return product.availableInventory > this.cartCount(product.id);
+                    },
+                
+
+                    
+
+
+                },
+
+                computed: { // the Computed Property object
+                    cartItemCount: function() { //the property name
+                        // its value is calculated when it is called
+                        return this.cart.length || '';
+                    },
+
+                  
+                sortedProducts() {
+                    let productsArray = this.products.slice(0);
+                    function compare(a, b) {
+                        if (a.price > b.price)
+                            return 1;
+                        if (a.price < b.price)
+                            return -1;
+                        return 0;
+                    }
+                    return productsArray.sort(compare);
+                }
+            }
+    
+
+        });
+
+        </script>
+
+    </body>
+</html>
