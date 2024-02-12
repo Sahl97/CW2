@@ -91,5 +91,5 @@ app.delete('/collection/:collectionName/:id', (req, res, next) => {
     })
 })
 
-const port = process.env.port || 3000
+const port = process.env.port || 3002
 app.listen (port)
